@@ -3,6 +3,7 @@ import os
 import shutil
 import struct
 import sys
+import tempfile
 
 from .cancel import run_quiet
 from .paths import PROJETO, raiz_projeto
@@ -103,22 +104,29 @@ def load_dsf(path, work):
     return raw, False
 
 
+def copy_dsf_atomic(source, dest):
+    with tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.abspath(dest))) as work:
+        pending = os.path.join(work, "tile.tmp")
+        shutil.copy2(source, pending)
+        os.replace(pending, dest)
+
+
 def store_dsf(src_raw, dest, compressed):
-    data_check = open(src_raw, "rb").read(8)
+    with open(src_raw, "rb") as handle:
+        data_check = handle.read(8)
     if data_check != b"XPLNEDSF":
         raise RuntimeError("DSF invalido depois da edicao")
     if not compressed:
-        shutil.copy2(src_raw, dest)
+        copy_dsf_atomic(src_raw, dest)
         return
     folder = os.path.dirname(src_raw)
-    archive = dest + ".tmp.7z"
-    if os.path.isfile(archive):
-        os.remove(archive)
-    run_quiet(
-        [seven_zip(), "a", "-t7z", "-m0=LZMA", "-mx=5", "-md=48m", archive, "--", os.path.basename(src_raw)],
-        cwd=folder,
-    )
-    os.replace(archive, dest)
+    with tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.abspath(dest))) as work:
+        archive = os.path.join(work, "tile.7z")
+        run_quiet(
+            [seven_zip(), "a", "-t7z", "-m0=LZMA", "-mx=5", "-md=48m", archive, "--", os.path.basename(src_raw)],
+            cwd=folder,
+        )
+        os.replace(archive, dest)
 
 
 def sample_dem(grid, west, south, lon, lat):

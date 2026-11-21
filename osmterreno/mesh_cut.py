@@ -77,11 +77,11 @@ class CortadorSeguro:
         self.proc.stdin.write((cabeca + "\n").encode("utf-8"))
         self.proc.stdin.flush()
 
-    def _uma(self, verts):
+    def _pedir(self, pedido):
         if self.proc is None or self.proc.poll() is not None:
             return None
         try:
-            self.proc.stdin.write((json.dumps(verts) + "\n").encode("utf-8"))
+            self.proc.stdin.write((json.dumps(pedido) + "\n").encode("utf-8"))
             self.proc.stdin.flush()
             linha = self.proc.stdout.readline()
         except OSError:
@@ -89,10 +89,35 @@ class CortadorSeguro:
         if not linha:
             self.fechar()
             return None
-        data = json.loads(linha.decode("utf-8"))
+        return json.loads(linha)
+
+    def _uma(self, verts):
+        data = self._pedir(verts)
+        if data is None:
+            return None
         if isinstance(data, dict):
             return None
-        return [tuple(ponto) for ponto in data]
+        return data
+
+    def cortar_lotes(self, triangulos):
+        inicio = 0
+        while inicio < len(triangulos):
+            verificar_cancelamento()
+            tamanho = 128
+            if self.quality:
+                tamanho = min(tamanho, 1500 - self.feitos % 1500)
+            lote = triangulos[inicio : inicio + tamanho]
+            data = self._pedir({"triangulos": lote}) if len(lote) > 1 else None
+            if isinstance(data, list) and len(data) == len(lote) and all(item is not None for item in data):
+                self.feitos += len(lote)
+                self._reciclar()
+                yield from ((verts, pecas, False) for verts, pecas in zip(lote, data))
+            else:
+                # Repete individualmente para isolar um triângulo que derrubou o processo.
+                for verts in lote:
+                    pecas = self.cortar(verts)
+                    yield verts, pecas, self.pulou
+            inicio += len(lote)
 
     def cortar(self, verts):
         self.pulou = False
@@ -113,10 +138,13 @@ class CortadorSeguro:
                 self._abrir(self.quality)
             return [tuple(tuple(p) for p in verts)]
         self.feitos += 1
+        self._reciclar()
+        return data
+
+    def _reciclar(self):
         if self.quality and self.feitos % 1500 == 0:
             self.fechar()
             self._abrir(self.quality)
-        return data
 
     def fechar(self):
         if self.proc is not None and self.proc.poll() is None:
@@ -184,16 +212,19 @@ def cut_mesh_text(src, dst, layers, grid, west, south, log, proteger_agua=True, 
     region_ready = prep(region)
     airport_ready = prep(unary_union([polygon for polygon, _spec in layers]))
     pad = 0.002
+    left, right, bottom, top = minx - pad, maxx + pad, miny - pad, maxy + pad
+
+    def fora_da_area(verts):
+        a, b, c = verts
+        return (
+            a[0] < left and b[0] < left and c[0] < left
+            or a[0] > right and b[0] > right and c[0] > right
+            or a[1] < bottom and b[1] < bottom and c[1] < bottom
+            or a[1] > top and b[1] > top and c[1] > top
+        )
 
     def decide(verts):
-        lons = [v[0] for v in verts]
-        lats = [v[1] for v in verts]
-        if (
-            max(lons) < minx - pad
-            or min(lons) > maxx + pad
-            or max(lats) < miny - pad
-            or min(lats) > maxy + pad
-        ):
+        if fora_da_area(verts):
             return None
         tri = Polygon([(v[0], v[1]) for v in verts])
         if tri.is_empty or not region_ready.intersects(tri):
@@ -277,27 +308,22 @@ def cut_mesh_text(src, dst, layers, grid, west, south, log, proteger_agua=True, 
                 begin = pending_begin or "BEGIN_PRIMITIVE 0\n"
                 direct = []
                 made = []
+                triangulos_cortar = []
                 for verts in triangulos_do_lote(batch):
                     verificar_cancelamento()
-                    lons = [v[0] for v in verts]
-                    lats = [v[1] for v in verts]
-                    near = not (
-                        max(lons) < minx - pad
-                        or min(lons) > maxx + pad
-                        or max(lats) < miny - pad
-                        or min(lats) > maxy + pad
-                    )
                     do_cut = False
-                    if near:
+                    if not fora_da_area(verts):
                         do_cut = decisions[turn]
                         turn += 1
                     if not do_cut:
                         direct.append(tuple(verts))
                         kept += 1
                         continue
-                    for piece in cortador.cortar(verts):
+                    triangulos_cortar.append(verts)
+                for verts, pieces, pulou in cortador.cortar_lotes(triangulos_cortar):
+                    for piece in pieces:
                         made.append(tuple((v[0], v[1], z_for(v, verts), *v[3:]) for v in piece))
-                    if cortador.pulou:
+                    if pulou:
                         pulados += 1
                     cut += 1
                     if cut % 2000 == 0:
@@ -333,7 +359,8 @@ def cortar_em_texto(path, work, layers, log, proteger_agua=True, blend_m=BLEND_M
     log("7z aberto em %.0f s" % (time.time() - inicio))
     txt = os.path.join(work, "tile.txt")
     inicio = time.time()
-    run_quiet([dsf_tool(), "--dsf2text", raw, txt])
+    # O DSFTool escreve o caminho dos rasters no texto do DSF.
+    run_quiet([dsf_tool(), "--dsf2text", raw, os.path.basename(txt)], cwd=work)
     log("malha em texto em %.0f s" % (time.time() - inicio))
     elev = txt + ".elevation.raw"
     if not os.path.isfile(elev):
@@ -360,7 +387,7 @@ def recortar_dsf(path, layers, log, proteger_agua=True, blend_m=BLEND_M, otimiza
         out_txt = cortar_em_texto(path, work, layers, log, proteger_agua, blend_m, otimizar, melhorar)
         out_dsf = os.path.join(work, os.path.basename(path))
         inicio = time.time()
-        run_quiet([dsf_tool(), "--text2dsf", out_txt, out_dsf])
+        run_quiet([dsf_tool(), "--text2dsf", os.path.basename(out_txt), os.path.basename(out_dsf)], cwd=work)
         log("texto para dsf em %.0f s" % (time.time() - inicio))
         inicio = time.time()
         store_dsf(out_dsf, path, True)
@@ -370,19 +397,28 @@ def recortar_dsf(path, layers, log, proteger_agua=True, blend_m=BLEND_M, otimiza
 
 
 def servir_cortes():
-    """Processo auxiliar: corta um triângulo por linha e morre sem levar a compilação."""
+    """Processo auxiliar de corte, isolado do resto da compilação."""
     from shapely import wkt
 
     cabeca = json.loads(sys.stdin.buffer.readline().decode("utf-8"))
     clips = [wkt.loads(texto) for texto in cabeca["clips"]]
     region = wkt.loads(cabeca["region"])
     quality = bool(cabeca["quality"])
-    for bruto in sys.stdin.buffer:
-        verts = [tuple(ponto) for ponto in json.loads(bruto.decode("utf-8"))]
+    def cortar(triangulo):
+        verts = [tuple(ponto) for ponto in triangulo]
         try:
-            feito = cut_triangle(verts, clips, region, quality)
-            saida = json.dumps(feito)
+            return cut_triangle(verts, clips, region, quality)
         except Exception:
-            saida = json.dumps({"erro": True})
+            return None
+
+    for bruto in sys.stdin.buffer:
+        pedido = json.loads(bruto)
+        if isinstance(pedido, dict):
+            resultado = [cortar(verts) for verts in pedido["triangulos"]]
+        else:
+            resultado = cortar(pedido)
+            if resultado is None:
+                resultado = {"erro": True}
+        saida = json.dumps(resultado)
         sys.stdout.buffer.write((saida + "\n").encode("utf-8"))
         sys.stdout.buffer.flush()

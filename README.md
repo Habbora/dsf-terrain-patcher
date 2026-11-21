@@ -30,9 +30,16 @@ A janela reúne a lista de OSM, a compilação, a recuperação do backup e o ed
 
 ### Windows com .exe (sem Python)
 
-1. Rode `Empacotar.bat` nesta máquina (precisa de Python só para gerar o pacote).
-2. Distribua a pasta inteira `dist\OsmTerreno\` (não só o `.exe`).
-3. Quem for usar abre `OsmTerreno.exe` dentro dessa pasta.
+1. Extraia o ZIP inteiro para uma pasta em que você possa gravar arquivos.
+2. Abra `OsmTerreno.exe` dentro da pasta extraída.
+
+Para gerar o pacote a partir do código-fonte, rode `Empacotar.bat` com Python 3.12 e compacte a pasta inteira `dist\OsmTerreno\`.
+
+### Pacote Linux ou macOS
+
+Extraia o arquivo `.tar.gz` e execute `./OsmTerreno` de dentro da pasta extraída. Instale o 7-Zip e deixe `7z` ou `7zz` disponível no PATH. No Linux, o editor empacotado usa Qt e requer uma sessão gráfica com as bibliotecas de sistema do Qt instaladas. No macOS, escolha `arm64` para Apple Silicon ou `x64` para Intel.
+
+O workflow **Release** do GitHub Actions gera os pacotes em cada sistema. Uma execução manual disponibiliza os arquivos como artefatos. Uma tag `v*` publica os pacotes no GitHub Releases após a validação dos builds.
 
 `OsmTerreno.bat` também abre o `.exe` se ele já existir em `dist\OsmTerreno\`.
 
@@ -50,6 +57,11 @@ O código fica no pacote `osmterreno/`: `app.py` (janela), `compile_job.py` (com
 No Windows, dê dois cliques em `OsmTerreno.bat` (ou no `.exe` empacotado). No Linux ou no Mac:
 
 ```
+# Linux
+chmod +x tools/lin/tools/DSFTool
+# Mac
+chmod +x tools/mac/tools/DSFTool
+# Ambos
 sh OsmTerreno.sh
 ```
 

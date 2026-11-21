@@ -1,7 +1,7 @@
 @echo off
 cd /d "%~dp0"
 echo Instalando PyInstaller...
-py -3.12 -m pip install -r requirements.txt pyinstaller
+py -3.12 -m pip install -r requirements.txt pyinstaller==6.22.3
 if errorlevel 1 (
   echo Falha ao instalar dependencias.
   pause

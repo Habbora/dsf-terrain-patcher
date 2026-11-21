@@ -1,7 +1,6 @@
 """Compilação dos tiles: log, configuração, plano por tile e recuperação do backup."""
 import json
 import os
-import shutil
 import subprocess
 import tempfile
 import threading
@@ -20,7 +19,7 @@ from .cancel import (
     pedir_cancelamento,
     verificar_cancelamento,
 )
-from .dsf_io import find_dsfs, tile_of
+from .dsf_io import copy_dsf_atomic, find_dsfs, tile_of
 from .mesh_cut import recortar_dsf
 from .osm_patch import BLEND_M, layers_of, load_patch
 from .paths import CONFIG_PATH, LOG_DIR, OSM_DIR, PASTA_PADRAO, PROJETO, comando_self
@@ -160,7 +159,7 @@ def compilar_tile(path, osms, opcoes, log=None):
         escrever("%d OSM, %d poligonos, faixa %.0f m" % (len(osms), len(layers), opcoes["faixa"]))
         backup = path + ".antes_osm"
         if not os.path.isfile(backup):
-            shutil.copy2(path, backup)
+            copy_dsf_atomic(path, backup)
             escrever("backup criado")
         inicio = time.time()
         recortar_dsf(path, layers, escrever, True, opcoes["faixa"], opcoes["otimizar"], opcoes["melhorar"])
@@ -268,7 +267,7 @@ def recuperar_varios(folder, origens, log, progresso=None):
         if not os.path.isfile(backup):
             log("sem backup: " + path)
             continue
-        shutil.copy2(backup, path)
+        copy_dsf_atomic(backup, path)
         log("recuperado " + os.path.basename(path))
         restored += 1
         if progresso:

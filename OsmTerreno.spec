@@ -1,11 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""Pacote Windows do OsmTerreno (pasta dist/OsmTerreno/)."""
+"""Pacote do OsmTerreno (pasta dist/OsmTerreno/)."""
 
 import os
+import sys
 
 from PyInstaller.utils.hooks import collect_all, collect_data_files
 
 raiz = os.path.abspath(SPECPATH)
+windows = sys.platform == "win32"
+plataforma = "win" if windows else "mac" if sys.platform == "darwin" else "lin"
 
 datas = [
     (os.path.join(raiz, "editor", "editor.html"), "editor"),
@@ -14,19 +17,19 @@ datas = [
     (os.path.join(raiz, "editor", "painel.js"), "editor"),
     (os.path.join(raiz, "editor", "visualizar-relevo.html"), "editor"),
     (os.path.join(raiz, "editor", "server.py"), "editor"),
-    (os.path.join(raiz, "tools", "win"), os.path.join("tools", "win")),
+    (os.path.join(raiz, "tools", plataforma), os.path.join("tools", plataforma)),
+    (os.path.join(raiz, "tools", "MANUAL.md"), "tools"),
+    (os.path.join(raiz, "docs", "*.png"), "docs"),
     (os.path.join(raiz, "config.exemplo.json"), "."),
     (os.path.join(raiz, "README.md"), "."),
 ]
 
-for nome in os.listdir(os.path.join(raiz, "osm")):
-    if nome.lower().endswith(".osm"):
-        datas.append((os.path.join(raiz, "osm", nome), "osm"))
+for nome in ("SBBR.patch.osm", "SBGL.patch.osm", "SBSP4.patch.osm"):
+    datas.append((os.path.join(raiz, "osm", nome), "osm"))
 
 binaries = []
 hiddenimports = [
     "webview",
-    "webview.platforms.edgechromium",
     "PIL",
     "PIL.Image",
     "triangle",
@@ -41,7 +44,14 @@ hiddenimports = [
     "http.server",
 ]
 
-for pacote in ("shapely", "triangle", "webview", "clr_loader"):
+pacotes = ["shapely", "triangle", "webview"]
+if windows:
+    hiddenimports.append("webview.platforms.edgechromium")
+    pacotes.append("clr_loader")
+elif plataforma == "lin":
+    hiddenimports.extend(("PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets"))
+
+for pacote in pacotes:
     try:
         d, b, h = collect_all(pacote)
         datas += d
@@ -80,7 +90,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
-    console=False,
+    console=not windows,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
