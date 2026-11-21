@@ -1,0 +1,29 @@
+{
+  "versao": 1,
+  "patches": [
+    {
+      "arquivo": "SBBR.patch.osm",
+      "nome": "Brasília",
+      "aeroporto": "SBBR",
+      "descricao": "Ajustes de relevo no Aeroporto de Brasília e arredores.",
+      "autor": "Alisson Queiroz Azevêdo",
+      "sha256": "d0ff02bd7d1020310fab00b2cdd8fcde5fc741232a0122b7686ec6c470edcba0"
+    },
+    {
+      "arquivo": "SBGL.patch.osm",
+      "nome": "Rio de Janeiro / Galeão",
+      "aeroporto": "SBGL",
+      "descricao": "Ajustes de relevo no Aeroporto do Galeão e arredores.",
+      "autor": "Alisson Queiroz Azevêdo",
+      "sha256": "507fffe449ea4c3d3c171d50d011d05629812d97ba9072f5ae5893b7b2b31048"
+    },
+    {
+      "arquivo": "SBSP4.patch.osm",
+      "nome": "São Paulo / Congonhas",
+      "aeroporto": "SBSP",
+      "descricao": "Ajustes de relevo no Aeroporto de Congonhas e arredores.",
+      "autor": "Alisson Queiroz Azevêdo",
+      "sha256": "7e5dbff9860f8c6b8b47a4ce334980788a32af11bf1eaeca21a763ef3c1e2e08"
+    }
+  ]
+}
