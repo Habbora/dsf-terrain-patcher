@@ -8,4 +8,5 @@ logs/
 cache/
 build/
 dist/
+osm/
 *.spec.bak

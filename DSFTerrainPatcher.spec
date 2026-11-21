@@ -24,9 +24,6 @@ datas = [
     (os.path.join(raiz, "README.md"), "."),
 ]
 
-for nome in ("SBBR.patch.osm", "SBGL.patch.osm", "SBSP4.patch.osm"):
-    datas.append((os.path.join(raiz, "osm", nome), "osm"))
-
 binaries = []
 hiddenimports = [
     "webview",

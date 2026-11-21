@@ -71,7 +71,7 @@ Na primeira vez, use **Pasta...** e aponte para o cenário. No Map Enhancement �
 
 ## Tutorial
 
-1. Coloque os `.patch.osm` em `osm/`, ou use **Importar**. **Novo** cria um arquivo vazio.
+1. Abra **Catálogo OSM…**, selecione um aeroporto e clique em **Baixar patch**. O aplicativo consulta o repositório Git ao abrir o catálogo. Para arquivos que você já tem, use **Importar**. **Novo** cria um arquivo vazio.
 2. Clique num OSM para selecionar. Ctrl seleciona vários e Shift seleciona um intervalo. **Selecionar tudo** e **Desmarcar tudo** valem para a lista inteira.
 3. **Editar** abre o mapa do OSM selecionado. O satélite é só referência para desenhar. A altitude de cada polígono aparece na lista e no mapa. Salve com Ctrl+S. Compilar não fica nessa janela.
 
@@ -97,3 +97,28 @@ OSM do mesmo tile compilam juntos, a partir do backup. Um OSM não apaga o corte
 - O DSF volta compactado em 7z LZMA. LZMA2 faz o X-Plane recusar o arquivo.
 
 O resumo dos manuais do DSFTool e do DDSTool está em `tools/MANUAL.md`.
+
+## Catálogos Git de patches OSM
+
+Os pacotes do aplicativo são distribuídos sem patches. O catálogo oficial fica na [branch `patches`](https://github.com/Habbora/dsf-terrain-patcher/tree/patches). Ao reabrir o catálogo, o programa consulta a branch atual. Se uma correção estiver disponível, **Baixar patch** pede confirmação antes de substituir a versão local e guarda um backup `.bak`.
+
+O programa usa Git se ele estiver instalado e baixa o catálogo oficial por HTTPS se Git estiver ausente. Para importar outro catálogo, abra **Catálogo OSM… → Importar via Git…**, informe a URL HTTPS de um repositório público e, se quiser, a branch ou tag. Coloque os arquivos `.patch.osm` e `manifest.json` na raiz da branch. O link opcional `cenario_url` pode apontar para a página do cenário ou para o repositório que o distribui.
+
+```json
+{
+  "versao": 1,
+  "patches": [
+    {
+      "arquivo": "SBSP.patch.osm",
+      "nome": "Congonhas",
+      "aeroporto": "SBSP",
+      "descricao": "Ajuste de relevo para a pista e o pátio.",
+      "autor": "Nome do autor",
+      "cenario_url": "https://example.org/cenario",
+      "sha256": "<SHA-256 do arquivo com 64 dígitos hexadecimais>"
+    }
+  ]
+}
+```
+
+Ao corrigir um patch, atualize o SHA-256 no manifesto e envie os dois arquivos no mesmo commit. Use `Get-FileHash -Algorithm SHA256 SBSP.patch.osm` no PowerShell ou `shasum -a 256 SBSP.patch.osm` no Linux e macOS.

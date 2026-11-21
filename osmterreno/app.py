@@ -8,6 +8,7 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from . import APP_NAME
 from .cancel import Cancelado, cancelar, pedir_cancelamento
+from .catalogo_ui import CatalogoOSM
 from .compile_job import (
     aplicar,
     compilar_varios,
@@ -54,7 +55,10 @@ class App(tk.Tk):
         body.pack(fill="both", expand=True, **pad)
         left = ttk.Frame(body)
         left.pack(side="left", fill="both", expand=True)
-        ttk.Label(left, text="OSM  ·  clique para selecionar, Ctrl para vários").pack(anchor="w")
+        lista_topo = ttk.Frame(left)
+        lista_topo.pack(fill="x")
+        ttk.Label(lista_topo, text="OSM  ·  clique para selecionar, Ctrl para vários").pack(side="left")
+        self._botao(lista_topo, "Catálogo OSM…", lambda: CatalogoOSM(self)).pack(side="right")
         caixa = ttk.Frame(left)
         caixa.pack(fill="both", expand=True)
         self.lista = tk.Listbox(caixa, selectmode="extended", exportselection=False, activestyle="dotbox")
