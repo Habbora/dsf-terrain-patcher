@@ -114,6 +114,7 @@ O programa usa Git se ele estiver instalado e baixa o catálogo oficial por HTTP
       "aeroporto": "SBSP",
       "descricao": "Ajuste de relevo para a pista e o pátio.",
       "autor": "Nome do autor",
+      "cenario_autor": "Autor do cenário",
       "cenario_url": "https://example.org/cenario",
       "sha256": "<SHA-256 do arquivo com 64 dígitos hexadecimais>"
     }
@@ -122,3 +123,9 @@ O programa usa Git se ele estiver instalado e baixa o catálogo oficial por HTTP
 ```
 
 Ao corrigir um patch, atualize o SHA-256 no manifesto e envie os dois arquivos no mesmo commit. Use `Get-FileHash -Algorithm SHA256 SBSP.patch.osm` no PowerShell ou `shasum -a 256 SBSP.patch.osm` no Linux e macOS.
+
+### Propor um patch para revisão
+
+Na lista principal, selecione um OSM e clique em **Propor patch…**. Para um arquivo novo, informe nome, aeroporto, descrição e autor. Para uma correção, o formulário carrega os metadados do manifesto. Se você alterou apenas o OSM, preencha o resumo da proposta.
+
+Clique em **Preparar e-mail** para abrir um rascunho para `alisson@habbora.com.br` com o OSM e o `manifest.json` atualizados. Revise e envie pelo seu e-mail. O programa salva o rascunho `.eml` e os anexos em `propostas/`. Se o cliente de e-mail mostrar a mensagem sem anexos ou em modo de leitura, use **Abrir pasta dos anexos** e anexe os dois arquivos numa nova mensagem. Esse fluxo usa o catálogo público por HTTPS e dispensa conta no GitHub.

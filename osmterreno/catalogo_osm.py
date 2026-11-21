@@ -9,7 +9,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 from urllib.request import Request, urlopen
 from xml.etree.ElementTree import ParseError
 
@@ -34,6 +34,7 @@ class Patch:
     autor: str
     sha256: str
     cenario_url: str | None
+    cenario_autor: str | None = None
 
 
 def _https(url):
@@ -51,7 +52,7 @@ def _limitar(arquivo, limite):
 
 
 def _baixar(arquivo, limite):
-    pedido = Request(RAW_OFICIAL + arquivo, headers={"Cache-Control": "no-cache"})
+    pedido = Request(RAW_OFICIAL + quote(arquivo, safe=""), headers={"Cache-Control": "no-cache"})
     with urlopen(pedido, timeout=15) as resposta:
         _https(resposta.geturl())
         return _limitar(resposta, limite)
@@ -73,24 +74,38 @@ def ler_manifesto(dados):
         ):
             raise ValueError("Cada patch precisa de arquivo, nome, aeroporto, descrição, autor e SHA-256.")
         arquivo = registro["arquivo"]
-        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,120}\.patch\.osm", arquivo, re.IGNORECASE) or PureWindowsPath(arquivo).is_reserved():
+        if not re.fullmatch(r"[^\W_][\w .-]{0,120}\.patch\.osm", arquivo, re.IGNORECASE) or PureWindowsPath(arquivo).is_reserved():
             raise ValueError("Use apenas o nome do arquivo .patch.osm no manifesto.")
         if arquivo.casefold() in vistos or not re.fullmatch(r"[0-9a-fA-F]{64}", registro["sha256"]):
             raise ValueError(f"Nome duplicado ou SHA-256 inválido para {arquivo}.")
         cenario = registro.get("cenario_url")
+        cenario_autor = registro.get("cenario_autor")
+        if cenario_autor is not None and (not isinstance(cenario_autor, str) or not cenario_autor.strip()):
+            raise ValueError(f"Autor do cenário inválido para {arquivo}.")
         if cenario is not None:
             if not isinstance(cenario, str):
                 raise ValueError(f"Link de cenário inválido para {arquivo}.")
             _https(cenario)
         vistos.add(arquivo.casefold())
-        patches.append(Patch(**{campo: registro[campo] for campo in campos}, cenario_url=cenario))
+        patches.append(Patch(
+            **{campo: registro[campo] for campo in campos},
+            cenario_url=cenario, cenario_autor=cenario_autor,
+        ))
     return patches
 
 
 def catalogo_oficial():
     if shutil.which("git"):
         return catalogo_git(REPO_OFICIAL, BRANCH_OFICIAL)
-    return ler_manifesto(_baixar("manifest.json", MAX_MANIFESTO)), baixar_patch
+    return manifesto_oficial(), baixar_patch
+
+
+def manifesto_oficial():
+    return ler_manifesto(baixar_manifesto_oficial())
+
+
+def baixar_manifesto_oficial():
+    return _baixar("manifest.json", MAX_MANIFESTO)
 
 
 def baixar_patch(patch):
@@ -144,15 +159,19 @@ def _arquivo_do_git(destino, nome):
     return arquivo
 
 
-def instalar_patch(patch, dados, pasta, atualizar=False):
-    if sha256(dados).hexdigest() != patch.sha256.lower():
-        raise ValueError("O conteúdo do patch diverge do manifesto. Reabra o catálogo e tente novamente.")
+def validar_osm(dados):
     try:
         flats, ramps, _ = load_patch(BytesIO(dados))
         if not flats and not ramps:
             raise ValueError("Sem altitudes de patch")
     except (KeyError, TypeError, ValueError, ParseError) as exc:
         raise ValueError("O arquivo não é um patch de terreno OSM válido.") from exc
+
+
+def instalar_patch(patch, dados, pasta, atualizar=False):
+    if sha256(dados).hexdigest() != patch.sha256.lower():
+        raise ValueError("O conteúdo do patch diverge do manifesto. Reabra o catálogo e tente novamente.")
+    validar_osm(dados)
 
     destino = Path(pasta) / patch.arquivo
     destino.parent.mkdir(parents=True, exist_ok=True)

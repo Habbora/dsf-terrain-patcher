@@ -1,10 +1,12 @@
 """Janela principal do X-Plane DSF Terrain Patcher."""
 import os
 import shutil
+import subprocess
 import threading
 import traceback
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
+from queue import Empty, Queue
 
 from . import APP_NAME
 from .cancel import Cancelado, cancelar, pedir_cancelamento
@@ -24,6 +26,8 @@ from .editor_launch import abrir_editor
 from .osm_patch import BLEND_M
 from .paths import OSM_DIR
 from .preview import VisorMalha
+from .proposta_osm import DESTINATARIO, abrir_no_sistema, metadados_da_proposta, preparar_proposta
+from .proposta_ui import FormularioProposta
 
 
 class App(tk.Tk):
@@ -39,6 +43,8 @@ class App(tk.Tk):
         self.melhorar = tk.BooleanVar(value=bool(cfg.get("melhorar", False)))
         self.status = tk.StringVar(value="Pronto")
         self.busy = False
+        self.proposta_pendente = False
+        self.pasta_anexos = None
         self.fechando = False
         self.botoes = []
         self.protocol("WM_DELETE_WINDOW", self.ao_fechar)
@@ -91,6 +97,8 @@ class App(tk.Tk):
         self.caixa_melhorar.pack(anchor="w", padx=8, pady=(0, 6))
         self._botao(acoes, "Compilar", self.compilar).pack(fill="x", padx=8, pady=(8, 4))
         self._botao(acoes, "Recuperar", self.recuperar_click).pack(fill="x", padx=8, pady=4)
+        self._botao(acoes, "Propor patch…", self.enviar_proposta).pack(fill="x", padx=8, pady=4)
+        self.botao_anexos = ttk.Button(acoes, text="Abrir pasta dos anexos", command=self.abrir_pasta_anexos)
 
         self.log = tk.Text(self, height=12, wrap="word")
         self.log.pack(fill="both", expand=True, padx=10, pady=(0, 4))
@@ -107,6 +115,9 @@ class App(tk.Tk):
         return botao
 
     def ao_fechar(self):
+        if self.proposta_pendente:
+            messagebox.showinfo(APP_NAME, "Aguarde a preparação da proposta.", parent=self)
+            return
         if self.busy:
             if not messagebox.askyesno(
                 APP_NAME,
@@ -247,6 +258,86 @@ class App(tk.Tk):
             messagebox.showerror(APP_NAME, str(exc))
             return
         self.write("editor aberto em " + os.path.basename(origens[0]))
+
+    def enviar_proposta(self):
+        if self.proposta_pendente or self.busy:
+            return
+        origens = self.selecionados()
+        if len(origens) != 1:
+            if origens:
+                messagebox.showinfo(APP_NAME, "Selecione um OSM para propor.", parent=self)
+            return
+        origem = origens[0]
+        self._rodar_proposta(
+            lambda: metadados_da_proposta(origem),
+            lambda patch: self._abrir_formulario_proposta(origem, patch),
+            "Consultando o manifesto do OSM…",
+        )
+
+    def _abrir_formulario_proposta(self, origem, patch):
+        formulario = FormularioProposta(self, origem, patch)
+        if formulario.result is None:
+            return
+        campos, justificativa = formulario.result
+        self._rodar_proposta(
+            lambda: preparar_proposta(origem, campos, justificativa),
+            self._abrir_email_proposta,
+            "Preparando e-mail de proposta…",
+        )
+
+    def _abrir_email_proposta(self, rascunho):
+        self.pasta_anexos = rascunho.parent
+        self.botao_anexos.pack(fill="x", padx=8, pady=4)
+        self.status.set("Confira o OSM e o manifesto no e-mail. Se faltarem, abra a pasta dos anexos.")
+        self.write(f"Rascunho para {DESTINATARIO}: {rascunho}")
+        try:
+            abrir_no_sistema(rascunho)
+        except (OSError, subprocess.SubprocessError):
+            messagebox.showwarning(
+                APP_NAME,
+                f"Abra o rascunho com seu cliente de e-mail ou envie os arquivos para {DESTINATARIO}.\n\n"
+                f"Pasta dos anexos:\n{rascunho.parent}",
+                parent=self,
+            )
+
+    def abrir_pasta_anexos(self):
+        if self.pasta_anexos is None:
+            return
+        try:
+            abrir_no_sistema(self.pasta_anexos)
+        except (OSError, subprocess.SubprocessError):
+            messagebox.showwarning(APP_NAME, f"Pasta dos anexos:\n{self.pasta_anexos}", parent=self)
+
+    def _rodar_proposta(self, acao, sucesso, status):
+        resultado = Queue()
+        self.proposta_pendente = True
+        self._travar(True)
+        self.status.set(status)
+
+        def trabalho():
+            try:
+                resultado.put((True, acao()))
+            except Exception as exc:
+                resultado.put((False, str(exc)))
+
+        def conferir():
+            try:
+                ok, mensagem = resultado.get_nowait()
+            except Empty:
+                self.after(100, conferir)
+                return
+            self.proposta_pendente = False
+            self._travar(False)
+            if ok:
+                self.status.set("Pronto")
+                sucesso(mensagem)
+            else:
+                self.status.set("Falha na proposta.")
+                self.write(mensagem)
+                messagebox.showerror(APP_NAME, mensagem, parent=self)
+
+        threading.Thread(target=trabalho, daemon=True).start()
+        self.after(100, conferir)
 
     def ver_malha(self):
         origens = self.selecionados()

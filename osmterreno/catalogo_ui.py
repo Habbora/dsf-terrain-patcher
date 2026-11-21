@@ -118,7 +118,11 @@ class CatalogoOSM(tk.Toplevel):
         ocupado = self.oficial.instate(["disabled"])
         self.instalar.state(["!disabled"] if patch and not ocupado else ["disabled"])
         self.link.state(["!disabled"] if patch and patch.cenario_url and not ocupado else ["disabled"])
-        self.detalhes.set(f"Autor: {patch.autor}\n{patch.descricao}" if patch else "")
+        if patch:
+            credito = f"\nAutor do cenário: {patch.cenario_autor}" if patch.cenario_autor else ""
+            self.detalhes.set(f"Autor do patch: {patch.autor}{credito}\n{patch.descricao}")
+        else:
+            self.detalhes.set("")
 
     def abrir_cenario(self):
         patch = self.patch_selecionado()
