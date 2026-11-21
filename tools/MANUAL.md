@@ -1,21 +1,21 @@
 # Ferramentas do X-Plane no OsmTerreno
 
 Resumo dos manuais do **X-Plane Scenery Tools 24-5** (Laminar Research), com o que importa para este projeto.
-Os READMEs originais, em inglês, estão em `ferramentas/<sistema>/README.*`.
+Os READMEs originais, em inglês, estão em `tools/<sistema>/README.*`.
 
 ## Onde está cada ferramenta
 
 | Sistema | DSFTool | DDSTool | Interface |
 |---|---|---|---|
-| Windows | `ferramentas/win/tools/DSFTool.exe` | `ferramentas/win/tools/DDSTool.exe` | `XGrinder.exe`, `Objview.exe` |
-| Linux | `ferramentas/lin/tools/DSFTool` | `ferramentas/lin/tools/DDSTool` | `XGrinder`, `ObjView` |
-| Mac | `ferramentas/mac/tools/DSFTool` | `ferramentas/mac/tools/DDSTool` | `XGrinder.app`, `ObjView.app` |
+| Windows | `tools/win/tools/DSFTool.exe` | `tools/win/tools/DDSTool.exe` | `XGrinder.exe`, `Objview.exe` |
+| Linux | `tools/lin/tools/DSFTool` | `tools/lin/tools/DDSTool` | `XGrinder`, `ObjView` |
+| Mac | `tools/mac/tools/DSFTool` | `tools/mac/tools/DDSTool` | `XGrinder.app`, `ObjView.app` |
 
 Versões: DSFTool 2.4.0-b1 e DDSTool 1.4.0-b1 (maio de 2024).
 A licença é MIT/X11 para o código da Laminar. Fonte: http://dev.x-plane.com/cgit/cgit.cgi/xptools.git/
 No Linux e no Mac, depois de copiar, é preciso marcar como executável (`chmod +x`).
 
-O compilador usa só o DSFTool. O caminho está em `dsf_tool()` em `compilador/aplicar_terreno.pyw`.
+O compilador usa só o DSFTool. O caminho está em `dsf_tool()` em `osmterreno/dsf_io.py`.
 
 ---
 
