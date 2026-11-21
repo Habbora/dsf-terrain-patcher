@@ -24,11 +24,11 @@
     {
       "arquivo": "São Paulo.patch.osm",
       "nome": "São Paulo",
-      "aeroporto": "SBSP",
-      "descricao": "Ajustes de relevo no Aeroporto de Congonhas e arredores.",
-      "autor": "Alisson Queiroz Azevêdo",
-      "sha256": "7e5dbff9860f8c6b8b47a4ce334980788a32af11bf1eaeca21a763ef3c1e2e08",
-      "cenario_autor": "AxScenery",
+      "aeroporto": "São Paulo, Garulhos",
+      "descricao": "Correção de terreno.",
+      "autor": "Alisson Queiroz de Azevêdo",
+      "sha256": "ace34b8fcd19a7f9bd33dcea685c5b57a28077fc91a5788a28f702e34a41909f",
+      "cenario_autor": "AxScenario",
       "cenario_url": "https://axscenery.com/sbsp-sbgr-pacote-sao-paulo/"
     }
   ]
