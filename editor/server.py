@@ -220,15 +220,14 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if path.endswith((".html", ".js", ".css", ".osm", ".xml", ".json")):
             self.send_header("Cache-Control", "no-store")
-        self.send_header("Access-Control-Allow-Origin", "*")
         super().end_headers()
 
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
+    def _permitir_requisicao(self):
+        host = f"127.0.0.1:{self.server.server_port}"
+        if self.headers.get("Host") == host and self.headers.get("Origin", f"http://{host}") == f"http://{host}":
+            return True
+        self.send_error(403)
+        return False
 
     def _json(self, code, payload):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -246,6 +245,8 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
+        if not self._permitir_requisicao():
+            return
         parsed = urlparse(self.path)
         route = parsed.path.rstrip("/")
         qs = parse_qs(parsed.query)
@@ -314,6 +315,8 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
+        if not self._permitir_requisicao():
+            return
         parsed = urlparse(self.path)
         route = parsed.path.rstrip("/")
         qs = parse_qs(parsed.query)
@@ -425,15 +428,10 @@ def garantir_servidor():
     patches = OSM_DIR if OSM_DIR.is_dir() else detect_patches_dir(cfg)
     cfg["patches_dir"] = str(patches)
     save_config(cfg)
-    url = "http://127.0.0.1:%s/editor.html" % PORT
-    if _httpd is not None:
-        return url
-    try:
-        _httpd = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    except OSError:
-        return url
-    threading.Thread(target=_httpd.serve_forever, daemon=True).start()
-    return url
+    if _httpd is None:
+        _httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=_httpd.serve_forever, daemon=True).start()
+    return f"http://127.0.0.1:{_httpd.server_port}/editor.html"
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ O **OSM** é o desenho. São polígonos no mapa, cada um com uma altitude em met
 
 O **DSF** contém a malha de triângulos que o X-Plane desenha naquele grau de latitude e longitude. O programa lê esse arquivo, corta os triângulos no contorno do OSM e grava a altitude nos vértices.
 
-A janela reúne a lista de OSM, a compilação, a recuperação do backup e o editor. O editor abre numa janela do próprio programa, com mapa, e só grava o arquivo. A compilação fica na janela principal.
+A janela reúne a lista de OSM, a compilação, a recuperação do backup e o editor. O editor abre numa janela do próprio programa. Se o Windows impedir o carregamento da DLL da janela integrada, o botão **Editar** abre o editor no navegador padrão. Mantenha o programa aberto enquanto edita. A compilação fica na janela principal.
 
 ## O que precisa
 
