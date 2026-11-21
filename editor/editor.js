@@ -2548,7 +2548,7 @@
       .catch((err) => {
         if (silent) return;
         stopLive();
-        $("statLine").innerHTML = "Rode <code>abrir-editor.bat</code> (ou <code>python servir-editor.py</code>) e abra <code>http://127.0.0.1:8766/editor.html</code>.";
+        $("statLine").innerHTML = "Rode <code>abrir-editor.bat</code> (ou <code>python server.py</code>) e abra <code>http://127.0.0.1:8766/editor.html</code>.";
         console.warn(err);
       });
   }

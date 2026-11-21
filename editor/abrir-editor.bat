@@ -5,8 +5,8 @@ echo Abrindo o editor...
 echo Ctrl+C fecha o servidor.
 echo.
 where py >nul 2>&1 && (
-  py -3 servir-editor.py
+  py -3 server.py
   goto :eof
 )
-python servir-editor.py
+python server.py
 if errorlevel 1 pause

@@ -6,3 +6,6 @@ config.json
 editor/editor-config.json
 logs/
 cache/
+build/
+dist/
+*.spec.bak

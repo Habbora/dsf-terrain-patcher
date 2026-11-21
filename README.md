@@ -24,17 +24,30 @@ A janela reúne a lista de OSM, a compilação, a recuperação do backup e o ed
 ## O que precisa
 
 - Windows, Linux ou Mac
-- Python 3.12
-- 7-Zip no Linux e no Mac. No Windows ele já vem em `ferramentas/win`
-- O DSFTool 24-5, já em `ferramentas/win`, `ferramentas/lin` e `ferramentas/mac`
+- No Windows pode usar o pacote `.exe` (sem instalar Python). Para desenvolver: Python 3.12
+- 7-Zip no Linux e no Mac. No Windows ele já vem em `tools/win`
+- O DSFTool 24-5, já em `tools/win`, `tools/lin` e `tools/mac`
+
+### Windows com .exe (sem Python)
+
+1. Rode `Empacotar.bat` nesta máquina (precisa de Python só para gerar o pacote).
+2. Distribua a pasta inteira `dist\OsmTerreno\` (não só o `.exe`).
+3. Quem for usar abre `OsmTerreno.exe` dentro dessa pasta.
+
+`OsmTerreno.bat` também abre o `.exe` se ele já existir em `dist\OsmTerreno\`.
+
+### Desenvolver com Python
 
 ```
 py -3.12 -m pip install -r requirements.txt
+py -3.12 -m osmterreno
 ```
+
+O código fica no pacote `osmterreno/`: `app.py` (janela), `compile_job.py` (compilação e recuperação), `mesh_cut.py` e `mesh_optimize.py` (corte e otimização da malha), `dsf_io.py` (DSF e 7z), `osm_patch.py` (leitura do OSM), `preview.py` (Ver malha) e `editor_launch.py`. O servidor do editor é `editor/server.py`.
 
 ## Abrir
 
-No Windows, dê dois cliques em `OsmTerreno.bat`. No Linux ou no Mac:
+No Windows, dê dois cliques em `OsmTerreno.bat` (ou no `.exe` empacotado). No Linux ou no Mac:
 
 ```
 sh OsmTerreno.sh
@@ -69,4 +82,4 @@ OSM do mesmo tile compilam juntos, a partir do backup. Um OSM não apaga o corte
 - O ponto na fronteira com um triângulo que não foi cortado fica na altura original, para não abrir fresta.
 - O DSF volta compactado em 7z LZMA. LZMA2 faz o X-Plane recusar o arquivo.
 
-O resumo dos manuais do DSFTool e do DDSTool está em `ferramentas/MANUAL.md`.
+O resumo dos manuais do DSFTool e do DDSTool está em `tools/MANUAL.md`.
