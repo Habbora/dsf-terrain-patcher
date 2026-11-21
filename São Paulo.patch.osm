@@ -436,9 +436,10 @@
     <nd ref='-35141' />
     <nd ref='-35140' />
     <tag k='altitude_high' v='785' />
-    <tag k='altitude_low' v='783' />
+    <tag k='altitude_low' v='784.33' />
     <tag k='cell_size' v='2' />
     <tag k='profile' v='spline' />
+    <tag k='steepness' v='2' />
   </way>
   <way id='-11683' action='modify' visible='true'>
     <nd ref='-35151' />
@@ -610,9 +611,10 @@
     <nd ref='-35067' />
     <nd ref='-36705' />
     <tag k='altitude_high' v='793' />
-    <tag k='altitude_low' v='783' />
+    <tag k='altitude_low' v='784.33' />
     <tag k='cell_size' v='2' />
     <tag k='profile' v='atanh' />
+    <tag k='steepness' v='2' />
   </way>
   <way id='-13614' action='modify' visible='true'>
     <nd ref='-36940' />
