@@ -1,6 +1,6 @@
-# OsmTerreno
+# X-Plane DSF Terrain Patcher
 
-Pós-processamento do relevo. A foto do chão continua a do cenário. O OsmTerreno só muda a altura dos triângulos, para o aeroporto e o entorno ficarem na altitude que você desenhou.
+Edite o relevo de aeroportos e arredores aplicando patches OSM à malha DSF do X-Plane. As texturas do cenário são preservadas.
 
 Foi testado no X-Plane 12. No X-Plane 11 não foi testado.
 
@@ -17,7 +17,7 @@ Se a pasta escolhida tiver `XPME_South_America`, esses são os tiles compilados.
 
 O **OSM** é o desenho. São polígonos no mapa, cada um com uma altitude em metros. Um polígono plano é uma área inteira na mesma altura. Uma rampa sobe de uma borda até a outra. O arquivo fica em `osm/` e termina em `.patch.osm`.
 
-O **DSF** é o terreno do X-Plane. É a malha de triângulos que o simulador desenha naquele grau de latitude e longitude. O OsmTerreno lê esse arquivo, corta os triângulos no contorno do OSM e grava a altitude nos vértices. A foto do ortho não entra nesse arquivo.
+O **DSF** contém a malha de triângulos que o X-Plane desenha naquele grau de latitude e longitude. O programa lê esse arquivo, corta os triângulos no contorno do OSM e grava a altitude nos vértices.
 
 A janela reúne a lista de OSM, a compilação, a recuperação do backup e o editor. O editor abre numa janela do próprio programa, com mapa, e só grava o arquivo. A compilação fica na janela principal.
 
@@ -31,17 +31,19 @@ A janela reúne a lista de OSM, a compilação, a recuperação do backup e o ed
 ### Windows com .exe (sem Python)
 
 1. Extraia o ZIP inteiro para uma pasta em que você possa gravar arquivos.
-2. Abra `OsmTerreno.exe` dentro da pasta extraída.
+2. Abra `DSFTerrainPatcher.exe` dentro da pasta extraída.
 
-Para gerar o pacote a partir do código-fonte, rode `Empacotar.bat` com Python 3.12 e compacte a pasta inteira `dist\OsmTerreno\`.
+Os pacotes do release v0.1.0 foram publicados com o nome anterior, `OsmTerreno`.
+
+Para gerar o pacote a partir do código-fonte, rode `Empacotar.bat` com Python 3.12 e compacte a pasta inteira `dist\DSFTerrainPatcher\`.
 
 ### Pacote Linux ou macOS
 
-Extraia o arquivo `.tar.gz` e execute `./OsmTerreno` de dentro da pasta extraída. Instale o 7-Zip e deixe `7z` ou `7zz` disponível no PATH. No Linux, o editor empacotado usa Qt e requer uma sessão gráfica com as bibliotecas de sistema do Qt instaladas. No macOS, escolha `arm64` para Apple Silicon ou `x64` para Intel.
+Extraia o arquivo `.tar.gz` e execute `./DSFTerrainPatcher` de dentro da pasta extraída. Instale o 7-Zip e deixe `7z` ou `7zz` disponível no PATH. No Linux, o editor empacotado usa Qt e requer uma sessão gráfica com as bibliotecas de sistema do Qt instaladas. No macOS, escolha `arm64` para Apple Silicon ou `x64` para Intel.
 
 O workflow **Release** do GitHub Actions gera os pacotes em cada sistema. Uma execução manual disponibiliza os arquivos como artefatos. Uma tag `v*` publica os pacotes no GitHub Releases após a validação dos builds.
 
-`OsmTerreno.bat` também abre o `.exe` se ele já existir em `dist\OsmTerreno\`.
+`DSFTerrainPatcher.bat` também abre o `.exe` se ele já existir em `dist\DSFTerrainPatcher\`.
 
 ### Desenvolver com Python
 
@@ -54,7 +56,7 @@ O código fica no pacote `osmterreno/`: `app.py` (janela), `compile_job.py` (com
 
 ## Abrir
 
-No Windows, dê dois cliques em `OsmTerreno.bat` (ou no `.exe` empacotado). No Linux ou no Mac:
+No Windows, dê dois cliques em `DSFTerrainPatcher.bat` (ou no `.exe` empacotado). No Linux ou no Mac:
 
 ```
 # Linux
@@ -62,7 +64,7 @@ chmod +x tools/lin/tools/DSFTool
 # Mac
 chmod +x tools/mac/tools/DSFTool
 # Ambos
-sh OsmTerreno.sh
+sh DSFTerrainPatcher.sh
 ```
 
 Na primeira vez, use **Pasta...** e aponte para o cenário. No Map Enhancement é a pasta que contém `XPME_South_America`. No Ortho4XP ou na malha original, é a pasta daquele pacote. Esse caminho fica no `config.json`, só nesta máquina.
@@ -82,7 +84,7 @@ Na primeira vez, use **Pasta...** e aponte para o cenário. No Map Enhancement �
 6. **Compilar** grava o DSF por cima do Map Enhancement. O backup `.antes_osm` é criado uma vez e não é substituído. **Recuperar** devolve esse backup.
 7. Reinicie o X-Plane para ver o terreno. O registro da última compilação fica em `logs/Log.txt`.
 
-![Janela do OsmTerreno](docs/janela.png)
+![Janela do X-Plane DSF Terrain Patcher](docs/janela.png)
 
 OSM do mesmo tile compilam juntos, a partir do backup. Um OSM não apaga o corte do outro. Vários tiles seguem um depois do outro.
 

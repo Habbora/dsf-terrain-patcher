@@ -1,4 +1,4 @@
-# Ferramentas do X-Plane no OsmTerreno
+# Ferramentas do X-Plane no X-Plane DSF Terrain Patcher
 
 Resumo dos manuais do **X-Plane Scenery Tools 24-5** (Laminar Research), com o que importa para este projeto.
 Os READMEs originais, em inglês, estão em `tools/<sistema>/README.*`.
@@ -97,7 +97,7 @@ Textura sem emenda a partir de amostra: `DDSTool --quilt origem.png largura altu
 
 ---
 
-## Regras que valem para o OsmTerreno
+## Regras que valem para o X-Plane DSF Terrain Patcher
 
 - O DSF do Map Enhancement vem compactado em 7z. Para gravar de volta, use **LZMA** (`-m0=LZMA`). Com LZMA2, o X-Plane não abre o arquivo e dá `dsf_ErrCouldNotOpenFile`. Nome que começa com `-` vai depois de `--` na linha do 7z.
 - O arquivo convertido precisa começar com `XPLNEDSF`.

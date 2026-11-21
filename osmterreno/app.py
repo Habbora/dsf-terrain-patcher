@@ -1,4 +1,4 @@
-"""Janela principal do OsmTerreno."""
+"""Janela principal do X-Plane DSF Terrain Patcher."""
 import os
 import shutil
 import threading
@@ -6,6 +6,7 @@ import traceback
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
+from . import APP_NAME
 from .cancel import Cancelado, cancelar, pedir_cancelamento
 from .compile_job import (
     aplicar,
@@ -27,7 +28,7 @@ from .preview import VisorMalha
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("OsmTerreno")
+        self.title(APP_NAME)
         self.geometry("860x580")
         self.minsize(720, 480)
         cfg = ler_config()
@@ -104,7 +105,7 @@ class App(tk.Tk):
     def ao_fechar(self):
         if self.busy:
             if not messagebox.askyesno(
-                "OsmTerreno",
+                APP_NAME,
                 "A compilação está em andamento.\nCancelar tudo e fechar?",
             ):
                 return
@@ -112,7 +113,7 @@ class App(tk.Tk):
             pedir_cancelamento()
             self.destroy()
             return
-        if messagebox.askokcancel("OsmTerreno", "Fechar o OsmTerreno?"):
+        if messagebox.askokcancel(APP_NAME, "Fechar o programa?"):
             self.fechando = True
             self.destroy()
 
@@ -139,7 +140,7 @@ class App(tk.Tk):
     def selecionados(self):
         escolhidos = [self.lista.get(i) for i in self.lista.curselection()]
         if not escolhidos:
-            messagebox.showinfo("OsmTerreno", "Selecione um ou mais OSM na lista.")
+            messagebox.showinfo(APP_NAME, "Selecione um ou mais OSM na lista.")
             return []
         return [os.path.join(OSM_DIR, nome) for nome in escolhidos]
 
@@ -161,22 +162,22 @@ class App(tk.Tk):
             self.lista.see(indice)
 
     def novo(self):
-        nome = simpledialog.askstring("OsmTerreno", "Nome do OSM novo:", parent=self)
+        nome = simpledialog.askstring(APP_NAME, "Nome do OSM novo:", parent=self)
         if not nome:
             return
         nome = nome.strip()
         if not nome.lower().endswith(".osm"):
             nome += ".osm"
         if any(c in nome for c in '\\/:*?"<>|'):
-            messagebox.showerror("OsmTerreno", "O nome tem um caractere que não pode ir no arquivo.")
+            messagebox.showerror(APP_NAME, "O nome tem um caractere que não pode ir no arquivo.")
             return
         destino = os.path.join(OSM_DIR, nome)
         if os.path.exists(destino):
-            messagebox.showerror("OsmTerreno", "Já existe um OSM com esse nome.")
+            messagebox.showerror(APP_NAME, "Já existe um OSM com esse nome.")
             return
         os.makedirs(OSM_DIR, exist_ok=True)
         with open(destino, "w", encoding="utf-8", newline="\n") as handle:
-            handle.write('<?xml version="1.0" encoding="UTF-8"?>\n<osm version="0.6" generator="OsmTerreno">\n</osm>\n')
+            handle.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<osm version="0.6" generator="{APP_NAME}">\n</osm>\n')
         self.recarregar(nome)
         self.write("criado " + nome)
 
@@ -222,7 +223,7 @@ class App(tk.Tk):
         if not origens:
             return
         nomes = ", ".join(os.path.basename(p) for p in origens)
-        if not messagebox.askyesno("OsmTerreno", "Apagar da lista: " + nomes + "?"):
+        if not messagebox.askyesno(APP_NAME, "Apagar da lista: " + nomes + "?"):
             return
         for origem in origens:
             os.remove(origem)
@@ -234,12 +235,12 @@ class App(tk.Tk):
         if not origens:
             return
         if len(origens) > 1:
-            messagebox.showinfo("OsmTerreno", "Editar abre um OSM. Deixe só um selecionado.")
+            messagebox.showinfo(APP_NAME, "Editar abre um OSM. Deixe só um selecionado.")
             return
         try:
             abrir_editor(origens[0])
         except Exception as exc:
-            messagebox.showerror("OsmTerreno", str(exc))
+            messagebox.showerror(APP_NAME, str(exc))
             return
         self.write("editor aberto em " + os.path.basename(origens[0]))
 
@@ -248,11 +249,11 @@ class App(tk.Tk):
         if not origens:
             return
         if len(origens) > 1:
-            messagebox.showinfo("OsmTerreno", "Ver malha abre um OSM. Deixe só um selecionado.")
+            messagebox.showinfo(APP_NAME, "Ver malha abre um OSM. Deixe só um selecionado.")
             return
         folder = self.folder.get().strip()
         if not os.path.isdir(folder):
-            messagebox.showerror("OsmTerreno", "A pasta dos terrenos nao existe.")
+            messagebox.showerror(APP_NAME, "A pasta dos terrenos nao existe.")
             return
         try:
             blend_m = ler_faixa(self.faixa.get())
@@ -261,7 +262,7 @@ class App(tk.Tk):
         try:
             VisorMalha(self, folder, origens[0], blend_m, self.melhorar.get())
         except Exception as exc:
-            messagebox.showerror("OsmTerreno", str(exc))
+            messagebox.showerror(APP_NAME, str(exc))
 
     def write(self, line):
         self.after(0, lambda line=line: self._escrever(line))
@@ -278,12 +279,12 @@ class App(tk.Tk):
         if not origens:
             return
         if not os.path.isdir(folder):
-            messagebox.showerror("OsmTerreno", "A pasta dos terrenos nao existe.")
+            messagebox.showerror(APP_NAME, "A pasta dos terrenos nao existe.")
             return
         try:
             faixa = ler_faixa(self.faixa.get())
         except RuntimeError as exc:
-            messagebox.showerror("OsmTerreno", str(exc))
+            messagebox.showerror(APP_NAME, str(exc))
             return
         otimizar = self.otimizar.get()
         melhorar = self.melhorar.get()
@@ -328,13 +329,13 @@ class App(tk.Tk):
                     self.after(0, lambda exc=exc: self.write("detalhe em " + caminho_log))
                     self.after(0, lambda exc=exc: self.status.set("Falhou: " + str(exc)))
                     self.after(0, lambda exc=exc: messagebox.showerror(
-                        "OsmTerreno", str(exc) + "\n\nDetalhe em:\n" + caminho_log
+                        APP_NAME, str(exc) + "\n\nDetalhe em:\n" + caminho_log
                     ))
             else:
                 if not self.fechando and not cancelar.is_set():
                     self.after(0, lambda: self._mostrar_progresso(total, total, "Concluído"))
                     self.after(0, lambda: messagebox.showinfo(
-                        "OsmTerreno",
+                        APP_NAME,
                         "Compilação concluída.\nReinicie o X-Plane para ver.",
                     ))
             finally:
@@ -345,7 +346,7 @@ class App(tk.Tk):
 
     def _mostrar_progresso(self, feito, total, texto):
         self.status.set(texto)
-        self.title("OsmTerreno — " + texto)
+        self.title(f"{APP_NAME} — {texto}")
         self.progresso.stop()
         self.progresso.configure(mode="determinate", maximum=max(total, 1), value=feito)
 
@@ -353,7 +354,7 @@ class App(tk.Tk):
         self.busy = False
         self._travar(False)
         if self.status.get() == "Concluído":
-            self.title("OsmTerreno — concluído")
+            self.title(f"{APP_NAME} — concluído")
 
     def compilar(self):
         self._rodar(aplicar)
@@ -364,7 +365,7 @@ class App(tk.Tk):
             return
         nomes = ", ".join(os.path.basename(p) for p in origens)
         if not messagebox.askyesno(
-            "OsmTerreno",
+            APP_NAME,
             "Voltar o DSF destes OSM para o backup original?\n" + nomes,
         ):
             return

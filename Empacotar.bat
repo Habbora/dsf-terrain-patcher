@@ -8,14 +8,14 @@ if errorlevel 1 (
   exit /b 1
 )
 echo.
-echo Gerando OsmTerreno.exe ...
-py -3.12 -m PyInstaller --noconfirm --clean OsmTerreno.spec
+echo Gerando DSFTerrainPatcher.exe ...
+py -3.12 -m PyInstaller --noconfirm --clean DSFTerrainPatcher.spec
 if errorlevel 1 (
   echo Falha no PyInstaller.
   pause
   exit /b 1
 )
 echo.
-echo Pronto: dist\OsmTerreno\OsmTerreno.exe
-echo Distribua a pasta inteira dist\OsmTerreno\
+echo Pronto: dist\DSFTerrainPatcher\DSFTerrainPatcher.exe
+echo Distribua a pasta inteira dist\DSFTerrainPatcher\
 pause

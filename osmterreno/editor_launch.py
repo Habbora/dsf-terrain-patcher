@@ -3,6 +3,7 @@ import importlib.util
 import json
 import os
 
+from . import APP_NAME
 from .paths import EDITOR_DIR, OSM_DIR
 
 
@@ -24,5 +25,5 @@ def abrir_editor(osm_path):
         import webview
     except ImportError as exc:
         raise RuntimeError("Falta o pywebview. Rode: py -3.12 -m pip install pywebview") from exc
-    webview.create_window("OsmTerreno — editor", url, width=1280, height=860)
+    webview.create_window(f"{APP_NAME} — editor", url, width=1280, height=860)
     webview.start()

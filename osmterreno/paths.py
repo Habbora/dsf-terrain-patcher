@@ -8,7 +8,7 @@ def congelado():
 
 
 def raiz_projeto():
-    """Pasta do OsmTerreno (osm/, editor/, tools/). No .exe é a pasta do executável."""
+    """Pasta do X-Plane DSF Terrain Patcher (osm/, editor/, tools/). No .exe é a pasta do executável."""
     if congelado():
         return os.path.dirname(os.path.abspath(sys.executable))
     pacote = os.path.dirname(os.path.abspath(__file__))

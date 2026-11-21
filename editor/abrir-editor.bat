@@ -1,5 +1,5 @@
 @echo off
-title OrthoForge Patch Editor
+title X-Plane DSF Terrain Patcher - Editor
 cd /d "%~dp0"
 echo Abrindo o editor...
 echo Ctrl+C fecha o servidor.

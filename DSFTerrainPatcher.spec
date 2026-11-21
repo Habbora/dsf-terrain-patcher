@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""Pacote do OsmTerreno (pasta dist/OsmTerreno/)."""
+"""Pacote do X-Plane DSF Terrain Patcher (pasta dist/DSFTerrainPatcher/)."""
 
 import os
 import sys
@@ -85,7 +85,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="OsmTerreno",
+    name="DSFTerrainPatcher",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -107,5 +107,5 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="OsmTerreno",
+    name="DSFTerrainPatcher",
 )

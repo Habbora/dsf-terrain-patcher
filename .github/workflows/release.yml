@@ -31,12 +31,12 @@ jobs:
       - if: runner.os == 'Linux'
         run: python -m pip install "pywebview[pyside6]==6.2.1"
       - run: python -m pip install -r requirements.txt pyinstaller==6.22.3
-      - run: python -m PyInstaller --noconfirm OsmTerreno.spec
+      - run: python -m PyInstaller --noconfirm DSFTerrainPatcher.spec
       - if: runner.os != 'Windows'
         shell: bash
         run: |
           if [[ "$RUNNER_OS" == macOS ]]; then platform=mac; else platform=lin; fi
-          chmod +x "dist/OsmTerreno/tools/$platform/tools/DSFTool"
+          chmod +x "dist/DSFTerrainPatcher/tools/$platform/tools/DSFTool"
       - name: Verificar o executável empacotado
         shell: bash
         run: |
@@ -46,8 +46,8 @@ jobs:
           import subprocess
           from pathlib import Path
 
-          package = Path("dist/OsmTerreno").resolve()
-          executable = package / ("OsmTerreno.exe" if os.name == "nt" else "OsmTerreno")
+          package = Path("dist/DSFTerrainPatcher").resolve()
+          executable = package / ("DSFTerrainPatcher.exe" if os.name == "nt" else "DSFTerrainPatcher")
           triangle = [[0, 0, 0], [1, 0, 0], [0, 1, 0]]
           header = {"clips": [], "region": "POLYGON EMPTY", "quality": False}
           batch = {"triangulos": [triangle, triangle]}
@@ -65,12 +65,12 @@ jobs:
         env:
           PLATFORM: ${{ matrix.platform }}
         run: |
-          name="OsmTerreno-${GITHUB_REF_NAME//\//-}-$PLATFORM"
+          name="DSFTerrainPatcher-${GITHUB_REF_NAME//\//-}-$PLATFORM"
           mkdir -p release
           if [[ "$RUNNER_OS" == Windows ]]; then
-            python -m zipfile -c "release/$name.zip" dist/OsmTerreno
+            python -m zipfile -c "release/$name.zip" dist/DSFTerrainPatcher
           else
-            tar -czf "release/$name.tar.gz" -C dist OsmTerreno
+            tar -czf "release/$name.tar.gz" -C dist DSFTerrainPatcher
           fi
       - uses: actions/upload-artifact@v4
         with:
@@ -96,4 +96,4 @@ jobs:
           options=()
           if [[ "$GITHUB_REF_NAME" == *-* ]]; then options+=(--prerelease); fi
           gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" \
-            --verify-tag --generate-notes "${options[@]}"
+            --verify-tag --title "X-Plane DSF Terrain Patcher $GITHUB_REF_NAME" --generate-notes "${options[@]}"
